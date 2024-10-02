@@ -1,9 +1,12 @@
 const express = require("express");
 const axios = require("axios");
+const helmet = require("helmet");
 const app = express();
 
 const CLIENT_ID = "your_client_id";
 const CLIENT_SECRET = "your_client_secret";
+
+app.use(helmet());
 
 app.post("/exchange-github-code", async (req, res) => {
   const { code } = req.body;
