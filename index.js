@@ -8,6 +8,7 @@ dotenv.config();
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const PORT = process.env.PORT || 3000;
 
 if (!CLIENT_ID || !CLIENT_SECRET) return;
 
@@ -37,4 +38,4 @@ app.post("/exchange-github-code", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
