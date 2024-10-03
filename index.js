@@ -1,10 +1,15 @@
 const express = require("express");
 const axios = require("axios");
 const helmet = require("helmet");
+const dotenv = require("dotenv");
 const app = express();
 
-const CLIENT_ID = "your_client_id";
-const CLIENT_SECRET = "your_client_secret";
+dotenv.config();
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+if (!CLIENT_ID || !CLIENT_SECRET) return;
 
 app.use(helmet());
 
