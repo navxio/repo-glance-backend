@@ -2,9 +2,13 @@ const express = require("express");
 const axios = require("axios");
 const helmet = require("helmet");
 const dotenv = require("dotenv");
-const app = express();
+const bodyParser = require("body-parser");
 
 dotenv.config();
+
+const app = express();
+
+app.use(bodyParser.json());
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
