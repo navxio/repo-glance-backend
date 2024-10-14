@@ -42,4 +42,25 @@ app.post("/exchange-github-code", async (req, res) => {
   }
 });
 
+app.post("/refresh-token", async (req, res) => {
+  const { refreshToken } = req.body;
+  fetch("https://github.com/login/oauth/access_token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refresh_token: refreshToken,
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      grant_type: "refresh_token",
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Store the new bearer_token and refresh_token
+      res.json(response.data);
+    });
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
