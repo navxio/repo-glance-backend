@@ -43,7 +43,7 @@ app.post("/exchange-github-code", async (req, res) => {
 });
 
 app.post("/refresh-token", async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refresh_token: refreshToken } = req.body;
   fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
