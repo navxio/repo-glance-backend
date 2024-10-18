@@ -44,6 +44,7 @@ app.post("/exchange-github-code", async (req, res) => {
 
 app.post("/refresh-token", async (req, res) => {
   const { refresh_token: refreshToken } = req.body;
+  console.log("found refresh token:", refreshToken);
   fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
@@ -58,8 +59,12 @@ app.post("/refresh-token", async (req, res) => {
   })
     .then((response) => response.json())
     .then((data) => {
+      console.log("found data", data);
       // Store the new bearer_token and refresh_token
       res.json(response.data);
+    })
+    .catch((e) => {
+      console.error(`error refreshing token ${e}`);
     });
 });
 
