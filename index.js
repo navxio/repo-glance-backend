@@ -49,8 +49,7 @@ app.post("/refresh-token", async (req, res) => {
   fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       client_id: CLIENT_ID,
