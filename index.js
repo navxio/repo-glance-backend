@@ -3,6 +3,7 @@ const axios = require("axios");
 const helmet = require("helmet");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const querystring = require("querystring");
 
 dotenv.config();
 
@@ -48,20 +49,22 @@ app.post("/refresh-token", async (req, res) => {
   fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/x-www-form-urlencoded",
     },
     body: JSON.stringify({
-      refresh_token: refreshToken,
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       grant_type: "refresh_token",
+      refresh_token: refreshToken,
     }),
   })
-    .then((response) => response.json())
+    .then((response) => response.text())
     .then((data) => {
+      const myResponse = querystring.parse(data);
       console.log("found data", data);
       // Store the new bearer_token and refresh_token
-      res.json(response.data);
+      res.json(myResponse);
     })
     .catch((e) => {
       console.error(`error refreshing token ${e}`);
