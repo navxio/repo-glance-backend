@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const querystring = require("querystring");
 const redis = require('redis')
 const { v4: uuidv4 } = require('uuid')
-const helper = require('helper')
+const helper = require('./helper.js')
 
 dotenv.config();
 
@@ -65,12 +65,14 @@ const exchangeCodeForToken = async (code) => {
 
 app.get('/oauth/start', async (req, res) => {
   const state = helper.generateRandomString()
+  const redirectUrl = 'https://repo-glance.navdeep.io/oauth/callback'
 
   try {
     const tempId = uuidv4()
     await redisClient.set(tempId, state)
 
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?state=${state}&tempId=${tempId}`
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&state=${state}&tempId=${tempId}&scope=repo&redirect_uri=${encodeURIComponent(redirectUrl)}`
+
     res.redirect(githubAuthUrl)
 
   } catch (e) {
@@ -92,7 +94,12 @@ app.get('/oauth/callback', async (req, res) => {
 
   try {
     const token = await exchangeCodeForToken(code)
-    res.json({ token })
+    res.send(`
+  <script>
+    window.opener.postMessage({ token: "${token}" }, '*');
+    window.close();
+  </script>
+`);
   } catch (er) {
     res.status(500).send('Token exchange failed')
   }
