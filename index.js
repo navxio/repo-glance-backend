@@ -5,10 +5,14 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 const redis = require('redis')
+const { v4: uuidv4 } = require('uuid')
+const helper = require('helper')
 
 dotenv.config();
 
 const app = express();
+
+app.use(bodyParser.json());
 
 const redisClient = redis.createClient()
 
@@ -19,7 +23,15 @@ redisClient.connect().then(result => {
   return
 })
 
-app.use(bodyParser.json());
+const isValidState = async (tempId, state) => {
+  try {
+    const res = await redisClient.get(tempId)
+    return res === state
+  } catch (e) {
+    console.error('redis error', e)
+    return null
+  }
+}
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -51,10 +63,30 @@ const exchangeCodeForToken = async (code) => {
   }
 };
 
-app.get('/oauth/callback', async (req, res) => {
-  const { code, state } = req.query
+app.get('/oauth/start', async (req, res) => {
+  const state = helper.generateRandomString()
 
-  if (!isValidState(state)) {
+  try {
+    const tempId = uuidv4()
+    await redisClient.set(tempId, state)
+
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?state=${state}&tempId=${tempId}`
+    res.redirect(githubAuthUrl)
+
+  } catch (e) {
+    console.error('redis error', e)
+    return res.status(500).send('Internal error')
+  }
+})
+
+app.get('/oauth/callback', async (req, res) => {
+  const { code, state, tempId } = req.query
+
+  const result = await isValidState(tempId, state)
+  // error
+  if (result === null) res.json(500).send('internal error')
+
+  if (!result) {
     return res.status(400).send("Invalid state")
   }
 
@@ -94,5 +126,6 @@ app.post("/refresh-token", async (req, res) => {
       console.error(`error refreshing token ${e}`);
     });
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
