@@ -1,0 +1,8 @@
+version: "3.8" # Specify the Docker Compose file format version
+services:
+  redis:
+    image: redis:latest # Use the latest Redis image from Docker Hub
+    container_name: redis_container # Name the container
+    ports:
+      - "6379:6379" # Map the container's Redis port to the host
+    restart: always # Ensure the container restarts automatically on failure

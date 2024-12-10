@@ -4,10 +4,20 @@ const helmet = require("helmet");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
+const redis = require('redis')
 
 dotenv.config();
 
 const app = express();
+
+const redisClient = redis.createClient()
+
+redisClient.connect().then(result => {
+  console.log('connected to redis on localhost:6379')
+}).catch(e => {
+  console.error(e)
+  return
+})
 
 app.use(bodyParser.json());
 
@@ -19,9 +29,7 @@ if (!CLIENT_ID || !CLIENT_SECRET) return;
 
 app.use(helmet());
 
-app.post("/exchange-github-code", async (req, res) => {
-  const { code } = req.body;
-
+const exchangeCodeForToken = async (code) => {
   try {
     const response = await axios.post(
       "https://github.com/login/oauth/access_token",
@@ -41,7 +49,24 @@ app.post("/exchange-github-code", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to exchange code for token" });
   }
-});
+};
+
+app.get('/oauth/callback', async (req, res) => {
+  const { code, state } = req.query
+
+  if (!isValidState(state)) {
+    return res.status(400).send("Invalid state")
+  }
+
+  try {
+    const token = await exchangeCodeForToken(code)
+    res.json({ token })
+  } catch (er) {
+    res.status(500).send('Token exchange failed')
+  }
+
+})
+
 
 app.post("/refresh-token", async (req, res) => {
   const { refresh_token: refreshToken } = req.body;
