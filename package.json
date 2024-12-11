@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sync": "rsync -avz --exclude-from=.slugignore . repo.glance:~/app/"
+    "sync": "rsync -avz --exclude-from=.slugignore . repo.glance:~/app/",
+    "dev": "nodemon"
   },
   "keywords": [],
   "author": "Navdeep Saini",
@@ -22,5 +23,8 @@
   },
   "volta": {
     "node": "18.20.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
