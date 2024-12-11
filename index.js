@@ -57,9 +57,12 @@ const exchangeCodeForToken = async (code) => {
       },
     );
 
-    res.json(response.data);
+    console.log('response', response)
+    const data = response.data
+    return data.token
   } catch (error) {
-    res.status(500).json({ error: "Failed to exchange code for token" });
+    console.error("Failed to exchange code for token", error)
+    return null
   }
 };
 
@@ -70,8 +73,10 @@ app.get('/oauth/start', async (req, res) => {
   try {
     const tempId = uuidv4()
     await redisClient.set(tempId, state)
+    const stateData = JSON.stringify({ tempId, randomState: state })
+    const encodedState = encodeURIComponent(Buffer.from(stateData).toString('base64'))
 
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&state=${state}&tempId=${tempId}&scope=repo&redirect_uri=${encodeURIComponent(redirectUrl)}`
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&state=${encodedState}&scope=repo&redirect_uri=${encodeURIComponent(redirectUrl)}`
 
     res.redirect(githubAuthUrl)
 
@@ -82,9 +87,17 @@ app.get('/oauth/start', async (req, res) => {
 })
 
 app.get('/oauth/callback', async (req, res) => {
-  const { code, state, tempId } = req.query
+  // decode the state
+  const { code, state: stateParam } = req.query
+  const decodedState = JSON.parse(Buffer.from(decodeURIComponent(stateParam), 'base64').toString())
+  const { tempId, randomState } = decodedState
 
-  const result = await isValidState(tempId, state)
+  let result
+  try {
+    result = await isValidState(tempId, randomState)
+  } catch (e) {
+    console.error('error retrieving tempId')
+  }
   // error
   if (result === null) res.json(500).send('internal error')
 
@@ -94,6 +107,7 @@ app.get('/oauth/callback', async (req, res) => {
 
   try {
     const token = await exchangeCodeForToken(code)
+    console.log('found token', token)
     res.send(`
   <script>
     window.opener.postMessage({ token: "${token}" }, '*');
@@ -101,6 +115,7 @@ app.get('/oauth/callback', async (req, res) => {
   </script>
 `);
   } catch (er) {
+    console.error('error on successful redirect:', er)
     res.status(500).send('Token exchange failed')
   }
 
