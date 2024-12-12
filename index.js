@@ -41,7 +41,7 @@ if (!CLIENT_ID || !CLIENT_SECRET) return;
 
 app.use(helmet());
 
-const exchangeCodeForToken = async (code) => {
+const exchangeCodeForTokenData = async (code) => {
   try {
     const response = await axios.post(
       "https://github.com/login/oauth/access_token",
@@ -58,8 +58,7 @@ const exchangeCodeForToken = async (code) => {
     );
 
     console.log('response', response)
-    const data = response.data
-    return data['access_token']
+    return response.data
   } catch (error) {
     console.error("Failed to exchange code for token", error)
     return null
@@ -110,8 +109,9 @@ app.get('/oauth/callback', async (req, res) => {
   }
 
   try {
-    const token = await exchangeCodeForToken(code)
-    res.redirect(`/oauth/end?token=${token}`)
+    const data = await exchangeCodeForTokenData(code)
+    const searchParams = new URLSearchParams(data)
+    res.redirect(`/oauth/end?${searchParams.toString()}`)
   } catch (er) {
     console.error('error on successful redirect:', er)
     res.status(500).send('Token exchange failed')
