@@ -7,7 +7,9 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "sync": "rsync -avz --exclude-from=.slugignore . repo.glance:~/app/",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "predeploy": "npm run sync",
+    "deploy": "ssh repo.glance < deploy.sh"
   },
   "keywords": [],
   "author": "Navdeep Saini",
