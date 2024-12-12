@@ -111,18 +111,7 @@ app.get('/oauth/callback', async (req, res) => {
 
   try {
     const token = await exchangeCodeForToken(code)
-    res.send(`
-  <body>
-  Github authorisation complete, now you can close this window.
-  </body>
-  <script>
-if (chrome.runtime && chrome.runtime.sendMessage) {
-  chrome.runtime.sendMessage({ token: "${token}", (response) => {
-    console.log("Token sent to extension:", response);
-  });
-}
-  </script>
-`);
+    res.redirect(`/oauth/end?token=${token}`)
   } catch (er) {
     console.error('error on successful redirect:', er)
     res.status(500).send('Token exchange failed')
@@ -130,6 +119,12 @@ if (chrome.runtime && chrome.runtime.sendMessage) {
 
 })
 
+app.get('/oauth/end', async (req, res) => {
+  const params = req.query
+
+  res.status(200).send('Authorization complete, you may close this window')
+
+})
 
 app.post("/refresh-token", async (req, res) => {
   const { refresh_token: refreshToken } = req.body;
