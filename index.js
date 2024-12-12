@@ -95,6 +95,10 @@ app.get('/oauth/callback', async (req, res) => {
   let result
   try {
     result = await isValidState(tempId, randomState)
+    if (result) {
+      // result is neither null nor false
+      await redisClient.del(tempId)
+    }
   } catch (e) {
     console.error('error retrieving tempId')
   }
@@ -107,8 +111,10 @@ app.get('/oauth/callback', async (req, res) => {
 
   try {
     const token = await exchangeCodeForToken(code)
-    console.log('found token', token)
     res.send(`
+  <body>
+  Github authorisation complete, now you can close this window.
+  </body>
   <script>
     window.opener.postMessage({ token: "${token}" }, '*');
     window.close();
