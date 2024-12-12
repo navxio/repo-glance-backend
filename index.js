@@ -116,8 +116,11 @@ app.get('/oauth/callback', async (req, res) => {
   Github authorisation complete, now you can close this window.
   </body>
   <script>
-    window.opener.postMessage({ token: "${token}" }, '*');
-    window.close();
+if (chrome.runtime && chrome.runtime.sendMessage) {
+  chrome.runtime.sendMessage({ token: "${token}", (response) => {
+    console.log("Token sent to extension:", response);
+  });
+}
   </script>
 `);
   } catch (er) {
