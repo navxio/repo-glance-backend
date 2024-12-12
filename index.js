@@ -59,7 +59,7 @@ const exchangeCodeForToken = async (code) => {
 
     console.log('response', response)
     const data = response.data
-    return data.token
+    return data['access_token']
   } catch (error) {
     console.error("Failed to exchange code for token", error)
     return null
