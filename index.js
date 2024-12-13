@@ -122,7 +122,6 @@ app.get('/oauth/callback', async (req, res) => {
 })
 
 app.get('/oauth/end', async (req, res) => {
-  const params = req.query
 
   res.status(200).send('Authorization complete, you may close this window')
 
