@@ -6,11 +6,13 @@ const bodyParser = require("body-parser");
 const querystring = require("querystring");
 const redis = require('redis')
 const { v4: uuidv4 } = require('uuid')
+const cors = require('cors')
 const helper = require('./helper.js')
 
 dotenv.config();
 
 const app = express();
+app.use(cors())
 
 app.use(bodyParser.json());
 
